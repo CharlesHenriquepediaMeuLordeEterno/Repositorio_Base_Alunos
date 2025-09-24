@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mano Marcksflix</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #141414;
+      color: #e5e5e5;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 30px;
+      font-weight: 700;
+    }
+
+    .category {
+      margin-bottom: 40px;
+    }
+
+    .category-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .movie-row {
+      display: flex;
+      overflow-x: auto;
+      gap: 12px;
+      padding-bottom: 10px;
+      scroll-behavior: smooth;
+    }
+
+    .movie-row::-webkit-scrollbar {
+      display: none;
+    }
+    .movie-row {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .movie-card {
+      min-width: 150px;
+      background-color: #222;
+      border-radius: 6px;
+      padding: 0;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      user-select: none;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .movie-card:hover {
+      transform: scale(1.1);
+      box-shadow: 0 10px 20px rgba(255, 0, 0, 0.7);
+      z-index: 10;
+    }
+
+    .movie-image {
+      width: 150px;
+      height: 225px;
+      object-fit: cover;
+      display: block;
+      border-radius: 6px 6px 0 0;
+    }
+
+    .movie-title {
+      margin-top: 8px;
+      padding: 0 8px 10px 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      text-align: center;
+      line-height: 1.2;
+    }
+  </style>
+</head>
+<body>
+
+ <h1>Filmes do Marcks</h1>
+  <div style="display: flex; flex: auto; place-items: end; padding: 10px; width: 100%;">
+    <p style="width: 80%;"></p>
+    
+    <p style="width: 20%;">Bem-vindo, Marcos</p>
+  </div>
+  <div id="categories-container"></div>
+
+  <script>
+    const moviesByCategory = {
+      "Drama": ["Ainda Estou Aqui","O Poderoso Chefão", "Ela", "Clube da Luta", "O Pianista"],
+      "Comédia": ["Tempos Modernos","American Pie","Dr. Dolittle", "Se Beber, Não Case!", "As Branquelas"],
+      "Policial": ["O Exterminador do Futuro","O Procurado","Velozes e Furiosos", "Bad Boys 4", "Tropa de Elite"],
+      "Guerra": ["Rambo","1917","Até o Último Homem", "12 Homens e uma Sentença", "O Resgate do Soldado Ryan"],
+      "Anime": ["Bleach", "One Piece", "Dragon Ball", "Naruto", "Jujutsu Kaisen"],
+      "Terror": ["Invocação do Mal", "O Chamado", "It a Coisa", "Terrifier", "Corra!"],
+      "Romance": ["Como Eu Era Antes de Você", "A Culpa é das Estrelas", "Titanic", "Antes do Amanhecer", "Um Amor para Recordar"],
+      "Ação": ["John Wick","Gladiador", "Matrix", "Kingsman: Serviço Secreto", "Top Gun: Maverick"],
+      "Herói": ["Homem Aranha longe de casa", "Vingadores:Ultimato", "Superman(2025)", "Deadpool 3", "O Espetacular Homem-Aranha"]
+    };
+
+    // Imagens placeholder para alguns filmes, chave é o nome do filme
+    const moviePosters = {
+      "O Poderoso Chefão": "https://image.tmdb.org/t/p/w200/3bhkrj58Vtu7enYsRolD1fZdja1.jpg",
+      "Clube da Luta": "https://image.tmdb.org/t/p/w200/bptfVGEQuv6vDTIMVCHjJ9Dz8PX.jpg",
+      "Tempos Modernos": "https://upload.wikimedia.org/wikipedia/pt/2/2e/Tempos_Modernos_-_Poster_Original.jpg",
+      "O Exterminador do Futuro": "https://image.tmdb.org/t/p/w200/9rZg1J6vMQoDVSgRyWcpJa8IAGy.jpg",
+      "Rambo": "https://image.tmdb.org/t/p/w200/1m4Lp9WfOZlMTjMNe57tSfzp7du.jpg",
+      "Bleach": "https://static.tvtropes.org/pmwiki/pub/images/bleach.png",
+      "It a Coisa": "https://image.tmdb.org/t/p/w200/9E2y5Q7WlCVNEhP5GiVTjhEhx1o.jpg",
+      "Titanic": "https://image.tmdb.org/t/p/w200/kHXEpyfl6zqn8a6YuozZUujufXf.jpg",
+      "John Wick": "https://image.tmdb.org/t/p/w200/9gk7adHYeDvHkCSEqAvQNLV5Uge.jpg",
+      "Vingadores:Ultimato": "https://image.tmdb.org/t/p/w200/ulzhLuWrPK07P1YkdWQLZnQh1JL.jpg",
+      "Jujutsu Kaisen": "https://tse3.mm.bing.net/th/id/OIP.uHWr83X296GMb_v85b6dxwHaLH?rs=1&pid=ImgDetMain&o=7&rm=3",
+      "One Piece": "https://otakukart.com/wp-content/uploads/2023/09/One-Piece-5.jpg",
+      "Ainda Estou Aqui": "https://www.publishnews.com.br/estaticos/uploads/2024/10/ml13jTJNmIFFs4e1mXu2FykV5TMdvpPocPLfr22Gbx3oUw90bzjcUwwO2EGQnhTGkv9uW0mxrEuHRpet.jpg",
+      "Ela": "https://oespectadorrabugentoblog.files.wordpress.com/2017/11/ela.jpg",
+      "O Pianista": "https://media.fstatic.com/Mkl6qpCwg5XZqIpfOpiFIbEHw2U=/210x312/smart/filters:format(webp)/media/movies/covers/2017/11/download_1_Gk4cGpB.png",
+      "Tempos Modernos": "https://media.fstatic.com/zXMckBHVw9MUAjLsm89J4JiwYNQ=/fit-in/290x478/smart/media/movies/covers/2018/04/S_997801-MLB20400842582_082015-O_zhaCGQ4.jpg",
+      "American Pie": "https://th.bing.com/th/id/R.e93c2b28a504ee205fc4984e166c23ad?rik=yTYyCrm%2bFBXguA&pid=ImgRaw&r=0",
+      "Dr. Dolittle": "https://th.bing.com/th/id/R.73ba13e0e480636264f21c8f212ca6a8?rik=PGvZZL1GlenhJg&pid=ImgRaw&r=0",
+      "Se Beber, Não Case!": "https://m.media-amazon.com/images/S/pv-target-images/7de3e539b111d5ce87b254329ad0af057a06788d1eec2b6f966f8aa2f9793753.jpg",
+      "As Branquelas": "https://th.bing.com/th/id/R.39a89e99926d2dc5fe34fb7859c07a0b?rik=Sva2TvMomSavzg&pid=ImgRaw&r=0",
+      "O Exterminador do Futuro": "https://br.web.img3.acsta.net/medias/nmedia/18/92/90/99/20224665.jpg",
+      "O Procurado": "https://tse2.mm.bing.net/th/id/OIP.x7Y_ANQHkxdX7QAUQ76QPAHaLH?rs=1&pid=ImgDetMain&o=7&rm=3",
+      "Velozes e Furiosos": "https://image.tmdb.org/t/p/original/s02HsnF8H2plColwtkbqYz9GTw5.jpg",
+      "Bad Boys 4": "https://br.web.img3.acsta.net/img/b0/17/b0173047cc91f385964595cc30cbb975.jpg",
+      "Tropa de Elite": "https://media.fstatic.com/ZGCuf0XM51bgVEu7yn5akGtg5DI=/fit-in/290x478/smart/media/movies/covers/2018/08/221.jpg",
+      "Dragon Ball": "https://tse1.mm.bing.net/th/id/OIP.W90rQssLQiPFCxinNObFiAAAAA?rs=1&pid=ImgDetMain&o=7&rm=3",
+      "Naruto": "https://www.themoviedb.org/t/p/w600_and_h900_bestv2/nRJmByfK9XdtOY73VArcN8KpKVs.jpg",
+      "Homem Aranha longe de casa": "https://www.themoviedb.org/t/p/w600_and_h900_bestv2/8V0hpq8BUzauB06eEfr7AmyTzbK.jpg",
+      "Superman(2025)": "https://www.themoviedb.org/t/p/w600_and_h900_bestv2/xeZ8oG6W60fEPf9yCjERUXiHRBF.jpg",
+      "Rambo": "https://i.pinimg.com/originals/64/03/08/6403086d4dc600bb433b841e7675795d.jpg",
+      "1917": "https://media.fstatic.com/-sc1OisnG3Pb-qxUiqQ8-iHs1gY=/322x478/smart/filters:format(webp)/media/movies/covers/2019/12/EL8hQ0gVAAApy0E.jpg",
+      "Até o Último Homem": "https://media.fstatic.com/UJJvFCOO62JfrlQ5SrCIBf5QPCg=/290x478/smart/media/movies/covers/2017/08/1200x630bb_yxH3OWy.jpg",
+      "12 Homens e uma Sentença": "https://th.bing.com/th/id/R.1f74a0331a0a77cb5f467ca20c040cee?rik=%2fnuPa5IdBFe0mw&riu=http%3a%2f%2fwww.cafecomfilme.com.br%2fmedia%2fk2%2fitems%2fcache%2f00908ae81f682520916a87e6d06e7322_XL.jpg&ehk=%2fC7oLq3lG94oPWIXheTo8kPRpF%2fV%2bcYKHByFbVzHsmE%3d&risl=&pid=ImgRaw&r=0",
+      "O Resgate do Soldado Ryan": "https://image.tmdb.org/t/p/original/9SykLweWJJ5ISoT52s4Pfmul9DM.jpg",
+      "Invocação do Mal": "https://tse1.mm.bing.net/th/id/OIP.ztnptdgHIE3p8IwQAYbkrAHaK3?rs=1&pid=ImgDetMain&o=7&rm=3",
+      "O Chamado": "https://media.themoviedb.org/t/p/w600_and_h900_bestv2/4skN151KEKtJQSLJ7zkWSDGE0DJ.jpg",
+      "Terrifier": "https://media.fstatic.com/fsMB0bEQHCO7rHCeAEwyOU1Y-sI=/322x478/smart/filters:format(webp)/media/movies/covers/2025/01/sSlX2fYQ7FVauJQ7f5pMVcuBCHE.jpg",
+      "Corra!": "https://media.fstatic.com/BsvJps36wRDx_srbPGf6x-Hi0YA=/322x478/smart/filters:format(webp)/media/movies/covers/2017/06/download_1_xcdkZJL.png",
+      "Como Eu Era Antes de Você": "https://br.web.img2.acsta.net/pictures/16/02/03/19/11/303307.jpg",
+      "Titanic": "https://tse1.mm.bing.net/th/id/OIP.ZR4TvgoLsB-oTcTkDBv_nwHaLH?rs=1&pid=ImgDetMain&o=7&rm=3",
+      "Matrix": "https://image.tmdb.org/t/p/original/dXNAPwY7VrqMAo51EKhhCJfaGb5.jpg",
+      "Deadpool 3": "https://tse4.mm.bing.net/th/id/OIP.WnTdbFPzcFLHhT5QstPlSwHaJQ?rs=1&pid=ImgDetMain&o=7&rm=3",
+      "Gladiador": "https://img.elo7.com.br/product/zoom/1DFAF3F/poster-cartaz-gladiador-poster.jpg",
+      "Kingsman: Serviço Secreto": "https://br.web.img2.acsta.net/pictures/15/03/03/22/36/487707.jpg",
+      "O Espetacular Homem-Aranha": "https://th.bing.com/th/id/R.5de5b85c16c58d28248e44042177f0d0?rik=cM9OTYcIMFb3MQ&riu=http%3a%2f%2fplanetadisney.com.br%2fwp-content%2fuploads%2f2012%2f04%2fespetacularhomemaranha_cartazBrasil-696x1024.jpg&ehk=BvOcD9FEinL0HTdwTe3o7%2fUrGDGIkPJTyAaPxCHRt%2bs%3d&risl=&pid=ImgRaw&r=0",
+      "A Culpa é das Estrelas": "https://tse1.mm.bing.net/th/id/OIP.i8BIr9d1bjnrv5p3lwvHrAHaK4?rs=1&pid=ImgDetMain&o=7&rm=3",
+      "Antes do Amanhecer": "https://m.media-amazon.com/images/S/pv-target-images/48a11a8d4aca4632bbb593e99538fcfdd77a5abe7bf40ec38b976aef4f405a7f.jpg",
+      "Um Amor para Recordar": "https://th.bing.com/th/id/R.76f9f4baef6ac0f7c3346b19e2864d67?rik=3EKGnmlSe%2fqfQw&pid=ImgRaw&r=0",
+      "Top Gun: Maverick": "https://th.bing.com/th/id/R.7be10e13238eff19e5aff26bde111085?rik=oHL75O2fyJ37jQ&riu=http%3a%2f%2fwww.atoupeira.com.br%2fwp-content%2fuploads%2f2022%2f03%2ftop-gun-maverick-novo-poster-2903.jpg&ehk=JDxzMpO0XjtZIci%2fnmY%2bMA8uNVpwpA99I3isiU2v9%2fk%3d&risl=&pid=ImgRaw&r=0"
+
+    
+  }
+
+    const container = document.getElementById('categories-container');
+
+    for (const category in moviesByCategory) {
+      const categoryDiv = document.createElement('div');
+      categoryDiv.classList.add('category');
+
+      const title = document.createElement('h2');
+      title.classList.add('category-title');
+      title.textContent = category;
+
+      const row = document.createElement('div');
+      row.classList.add('movie-row');
+
+      moviesByCategory[category].forEach(movie => {
+        const card = document.createElement('div');
+        card.classList.add('movie-card');
+
+        // Imagem do filme - tenta pegar do objeto moviePosters, se não tiver, usa placeholder
+        const img = document.createElement('img');
+        img.classList.add('movie-image');
+        img.alt = movie;
+        img.src = moviePosters[movie] || 'https://via.placeholder.com/150x225?text=Sem+Imagem';
+
+        const movieTitle = document.createElement('p');
+        movieTitle.classList.add('movie-title');
+        movieTitle.textContent = movie;
+
+        card.appendChild(img);
+        card.appendChild(movieTitle);
+        row.appendChild(card);
+      });
+
+      categoryDiv.appendChild(title);
+      categoryDiv.appendChild(row);
+      container.appendChild(categoryDiv);
+    }
+  </script>
+
+</body>
+</html>
